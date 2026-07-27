@@ -30,7 +30,12 @@ jobs:
           flutter pub cache clean --force
 
       - name: Create missing native Android files
-        run: flutter create . --platforms android --android-language kotlin
+        run: flutter create . --platforms android
+
+      # Aplica el plugin de Kotlin nativo directamente en el archivo build.gradle.kts
+      - name: Configure Kotlin Plugin for Gradle
+        run: |
+          echo 'plugins { id("org.jetbrains.kotlin.android") version "1.8.22" apply false }' | cat - android/build.gradle.kts > temp && mv temp android/build.gradle.kts || true
 
       - name: Install dependencies
         run: flutter pub get
