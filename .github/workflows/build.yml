@@ -24,17 +24,11 @@ jobs:
         with:
           channel: 'stable'
 
-      # PASO CLAVE: Genera la carpeta 'android' y los archivos 'build.gradle' que faltan
       - name: Create missing native Android files
         run: flutter create . --platforms android
 
       - name: Install dependencies
         run: flutter pub get
-
-      # Requerido para la librería de WebView
-      - name: Ensure correct minSdkVersion
-        run: |
-          sed -i 's/minSdkVersion .*/minSdkVersion 21/' android/app/build.gradle
 
       - name: Build APK
         run: flutter build apk --release
