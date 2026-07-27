@@ -29,8 +29,13 @@ jobs:
           rm -f pubspec.lock
           flutter clean
 
-      - name: Create native Android structure with Kotlin
+      - name: Create native Android structure
         run: flutter create . --platforms android --android-language kotlin
+
+      # PASO DEFINITIVO: Configura Kotlin en el pluginManagement de Gradle para resolver :jni
+      - name: Configure Kotlin Plugin for Gradle KTS
+        run: |
+          echo -e 'pluginManagement {\n    plugins {\n        id("org.jetbrains.kotlin.android") version "1.8.22" apply false\n    }\n}\n' | cat - android/settings.gradle.kts > temp && mv temp android/settings.gradle.kts || true
 
       - name: Install dependencies
         run: flutter pub get
