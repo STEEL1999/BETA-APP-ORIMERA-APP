@@ -24,14 +24,6 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Clean build files and locks
-        run: |
-          rm -f pubspec.lock
-          flutter clean
-
-      - name: Create native Android structure
-        run: flutter create . --platforms android
-
       - name: Install dependencies
         run: flutter pub get
 
