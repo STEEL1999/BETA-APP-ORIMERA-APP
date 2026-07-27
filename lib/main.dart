@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -32,15 +32,34 @@ class BrowserScreen extends StatefulWidget {
 }
 
 class _BrowserScreenState extends State<BrowserScreen> {
-  InAppWebViewController? webViewController;
+  late final WebViewController _controller;
   final TextEditingController _urlController = TextEditingController(text: "https://www.google.com");
   String currentUrl = "https://www.google.com";
-  double progress = 0;
+  int progress = 0;
 
   @override
   void initState() {
     super.initState();
     _requestPermissions();
+
+    _controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setNavigationDelegate(
+        NavigationDelegate(
+          onProgress: (int progressValue) {
+            setState(() {
+              progress = progressValue;
+            });
+          },
+          onPageStarted: (String url) {
+            setState(() {
+              currentUrl = url;
+              _urlController.text = url;
+            });
+          },
+        ),
+      )
+      ..loadRequest(Uri.parse('https://www.google.com'));
   }
 
   Future<void> _requestPermissions() async {
@@ -56,7 +75,7 @@ class _BrowserScreenState extends State<BrowserScreen> {
         formattedUrl = "https://www.google.com/search?q=$formattedUrl";
       }
     }
-    webViewController?.loadUrl(urlRequest: URLRequest(url: WebUri(formattedUrl)));
+    _controller.loadRequest(Uri.parse(formattedUrl));
   }
 
   Future<void> _downloadCurrentPageOrMedia() async {
@@ -115,26 +134,10 @@ class _BrowserScreenState extends State<BrowserScreen> {
       ),
       body: Column(
         children: [
-          if (progress < 1.0)
-            LinearProgressIndicator(value: progress, color: Colors.blueAccent),
+          if (progress < 100)
+            LinearProgressIndicator(value: progress / 100, color: Colors.blueAccent),
           Expanded(
-            child: InAppWebView(
-              initialUrlRequest: URLRequest(url: WebUri("https://www.google.com")),
-              onWebViewCreated: (controller) {
-                webViewController = controller;
-              },
-              onLoadStart: (controller, url) {
-                setState(() {
-                  currentUrl = url.toString();
-                  _urlController.text = currentUrl;
-                });
-              },
-              onProgressChanged: (controller, progressValue) {
-                setState(() {
-                  progress = progressValue / 100;
-                });
-              },
-            ),
+            child: WebViewWidget(controller: _controller),
           ),
         ],
       ),
@@ -145,17 +148,30 @@ class _BrowserScreenState extends State<BrowserScreen> {
           children: [
             IconButton(
               icon: const Icon(Icons.arrow_back),
-              onPressed: () => webViewController?.goBack(),
+              onPressed: () async {
+                if (await _controller.canGoBack()) {
+                  await _controller.goBack();
+                }
+              },
             ),
             IconButton(
               icon: const Icon(Icons.refresh),
-              onPressed: () => webViewController?.reload(),
+              onPressed: () => _controller.reload(),
             ),
             IconButton(
               icon: const Icon(Icons.arrow_forward),
-              onPressed: () => webViewController?.goForward(),
+              onPressed: () async {
+                if (await _controller.canGoForward()) {
+                  await _controller.goForward();
+                }
+              },
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
         ),
       ),
     );
