@@ -32,11 +32,6 @@ jobs:
       - name: Create missing native Android files
         run: flutter create . --platforms android --android-language kotlin
 
-      # PASO DEFINITIVO: Configura Kotlin a nivel raíz de Gradle para que paquetes como :jni no fallen
-      - name: Inject Kotlin Plugin into Gradle
-        run: |
-          echo 'buildscript { ext.kotlin_version = "1.8.22"; repositories { google(); mavenCentral() }; dependencies { classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version" } }' | cat - android/build.gradle > temp && mv temp android/build.gradle
-
       - name: Install dependencies
         run: flutter pub get
 
