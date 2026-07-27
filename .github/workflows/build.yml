@@ -24,12 +24,17 @@ jobs:
         with:
           channel: 'stable'
 
-      # Habilita el soporte de Kotlin para que 'jni' y 'flutter_downloader' no fallen
-      - name: Create missing native Android files with Kotlin support
+      - name: Create missing native Android files
         run: flutter create . --platforms android --android-language kotlin
 
+      - name: Fix Kotlin Gradle Plugin for dependencies
+        run: |
+          sed -i 's/plugins {/plugins {\n    id "org.jetbrains.kotlin.android" version "1.8.22" apply false/' android/build.gradle
+
       - name: Install dependencies
-        run: flutter pub get
+        run: |
+          flutter pub cache clean --force
+          flutter pub get
 
       - name: Build APK
         run: flutter build apk --release
