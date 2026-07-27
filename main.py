@@ -268,18 +268,11 @@ def main(page: ft.Page):
         content_padding=10
     )
 
-    # Componente WebView nativo activo
-    wv = ft.WebView(
-        url="https://www.google.com",
-        expand=True,
-        javascript_enabled=True,
-        on_page_started=lambda e: update_url_field(e.data),
+    # Navegador integrado usando IFrame nativo
+    browser_frame = ft.IFrame(
+        src="https://www.google.com",
+        expand=True
     )
-
-    def update_url_field(new_url):
-        if new_url:
-            url_input.value = new_url
-            page.update()
 
     def navigate(e):
         target = url_input.value.strip()
@@ -289,7 +282,7 @@ def main(page: ft.Page):
             else:
                 target = f"https://www.google.com/search?q={target}"
         url_input.value = target
-        wv.url = target
+        browser_frame.src = target
         page.update()
 
     def open_downloads(e):
@@ -339,7 +332,7 @@ def main(page: ft.Page):
                 padding=8,
                 bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST
             ),
-            wv
+            browser_frame
         ], expand=True)
     )
 
