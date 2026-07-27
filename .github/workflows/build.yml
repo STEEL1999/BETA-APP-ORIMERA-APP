@@ -24,13 +24,13 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Clean locks and cache
+      - name: Clean build files and locks
         run: |
           rm -f pubspec.lock
-          flutter pub cache clean --force
+          flutter clean
 
-      - name: Create missing native Android files
-        run: flutter create . --platforms android
+      - name: Create native Android structure with Kotlin
+        run: flutter create . --platforms android --android-language kotlin
 
       - name: Install dependencies
         run: flutter pub get
