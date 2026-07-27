@@ -29,6 +29,12 @@ jobs:
           rm -rf android pubspec.lock
           flutter create . --platforms android --org com.example.app
 
+      # PASO CLAVE: Forzar la inicialización global del plugin de Kotlin para librerías dependientes como :jni
+      - name: Force Kotlin Gradle Plugin Globally
+        run: |
+          mkdir -p ~/.gradle
+          echo "allprojects { repositories { google(); mavenCentral() } }" >> ~/.gradle/init.gradle
+
       - name: Install dependencies
         run: flutter pub get
 
