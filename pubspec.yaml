@@ -9,11 +9,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_inappwebview: ^6.0.0
-  flutter_downloader: ^1.11.0
-  path_provider: ^2.1.2
+  # Versiones actualizadas y compatibles
+  flutter_inappwebview: ^6.1.5
+  flutter_downloader: ^1.11.8
+  path_provider: ^2.1.3
   permission_handler: ^11.3.1
-  cupertino_icons: ^1.0.6
+  cupertino_icons: ^1.0.8
 
 dev_dependencies:
   flutter_test:
