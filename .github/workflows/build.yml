@@ -24,6 +24,11 @@ jobs:
         with:
           channel: 'stable'
 
+      - name: Clean everything and regenerate project
+        run: |
+          rm -rf android pubspec.lock
+          flutter create . --platforms android --org com.example.app
+
       - name: Install dependencies
         run: flutter pub get
 
