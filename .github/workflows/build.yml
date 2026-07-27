@@ -24,8 +24,14 @@ jobs:
         with:
           channel: 'stable'
 
+      # PASO CLAVE: Elimina bloqueos y cachés viejas para borrar 'jni'
+      - name: Clean locks and cache
+        run: |
+          rm -f pubspec.lock
+          flutter pub cache clean --force
+
       - name: Create missing native Android files
-        run: flutter create . --platforms android --template=app
+        run: flutter create . --platforms android
 
       - name: Install dependencies
         run: flutter pub get
