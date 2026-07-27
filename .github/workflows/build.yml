@@ -24,8 +24,9 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Create missing native Android files
-        run: flutter create . --platforms android
+      # Habilita el soporte de Kotlin para que 'jni' y 'flutter_downloader' no fallen
+      - name: Create missing native Android files with Kotlin support
+        run: flutter create . --platforms android --android-language kotlin
 
       - name: Install dependencies
         run: flutter pub get
