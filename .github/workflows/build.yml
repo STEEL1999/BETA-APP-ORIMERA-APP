@@ -24,32 +24,16 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Clean and create Android
+      - name: Clean and create Android platform
         run: |
-          rm -rf android pubspec.lock
+          rm -rf android
           flutter create . --platforms android --org com.example.app
 
       - name: Install dependencies
         run: flutter pub get
 
-      # SOLUCIÓN DEFINITIVA: Inyecta el plugin de Kotlin a nivel global para subproyectos como :jni
-      - name: Apply Kotlin Plugin Globally to All Subprojects
-        run: |
-          BUILD_GRADLE="android/build.gradle.kts"
-          if [ -f "$BUILD_GRADLE" ]; then
-            echo '
-            subprojects {
-                afterEvaluate { project ->
-                    if (project.plugins.hasPlugin("com.android.library") || project.plugins.hasPlugin("com.android.application")) {
-                        project.plugins.apply("org.jetbrains.kotlin.android")
-                    }
-                }
-            }
-            ' >> "$BUILD_GRADLE"
-          fi
-
       - name: Build APK
-        run: flutter build apk --release --android-skip-build-dependency-validation
+        run: flutter build apk --release
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
