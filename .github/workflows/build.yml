@@ -29,6 +29,10 @@ jobs:
           rm -rf android pubspec.lock
           flutter create . --platforms android --org com.example.app
 
+      - name: Fix Kotlin version in Gradle
+        run: |
+          sed -i 's/id("org.jetbrains.kotlin.android") version ".*" apply false/id("org.jetbrains.kotlin.android") version "1.8.22" apply false/g' android/settings.gradle.kts || true
+
       - name: Install dependencies
         run: flutter pub get
 
