@@ -1,12 +1,12 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'package:flutter_downloader/flutter_downloader.dart';
+import 'package:dio/dio.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  await FlutterDownloader.initialize(debug: true, ignoreSsl: true);
   runApp(const MyApp());
 }
 
@@ -36,6 +36,7 @@ class _BrowserScreenState extends State<BrowserScreen> {
   final TextEditingController _urlController = TextEditingController(text: "https://www.google.com");
   String currentUrl = "https://www.google.com";
   int progress = 0;
+  bool isDownloading = false;
 
   @override
   void initState() {
@@ -81,20 +82,35 @@ class _BrowserScreenState extends State<BrowserScreen> {
   Future<void> _downloadCurrentPageOrMedia() async {
     final status = await Permission.storage.request();
     if (status.isGranted) {
-      final externalDir = await getExternalStorageDirectory();
-      final downloadPath = externalDir?.path ?? "/sdcard/Download";
+      try {
+        setState(() {
+          isDownloading = true;
+        });
 
-      await FlutterDownloader.enqueue(
-        url: currentUrl,
-        savedDir: downloadPath,
-        showNotification: true,
-        openFileFromNotification: true,
-      );
+        final externalDir = await getExternalStorageDirectory();
+        final fileName = "download_${DateTime.now().millisecondsSinceEpoch}.html";
+        final savePath = "${externalDir?.path ?? '/sdcard/Download'}/$fileName";
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Iniciando descarga en segundo plano...')),
-        );
+        Dio dio = Dio();
+        await dio.download(currentUrl, savePath);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Descargado con éxito en: $savePath')),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Error al descargar el archivo')),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            isDownloading = false;
+          });
+        }
       }
     }
   }
@@ -127,8 +143,10 @@ class _BrowserScreenState extends State<BrowserScreen> {
             onPressed: () => _loadUrl(_urlController.text),
           ),
           IconButton(
-            icon: const Icon(Icons.download, color: Colors.greenAccent),
-            onPressed: _downloadCurrentPageOrMedia,
+            icon: isDownloading 
+                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                : const Icon(Icons.download, color: Colors.greenAccent),
+            onPressed: isDownloading ? null : _downloadCurrentPageOrMedia,
           ),
         ],
       ),
@@ -167,11 +185,6 @@ class _BrowserScreenState extends State<BrowserScreen> {
               },
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
         ),
       ),
     );
