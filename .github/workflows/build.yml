@@ -29,25 +29,17 @@ jobs:
           rm -rf android pubspec.lock
           flutter create . --platforms android --org com.example.app
 
-      # SOLUCIÓN CLAVE: Inyecta el soporte de kotlin() a nivel allprojects para que módulos externos como :jni lo lean
-      - name: Fix Kotlin for External Subprojects
-        run: |
-          echo '
-          allprojects {
-              afterEvaluate { project ->
-                  if (project.hasProperty("android")) {
-                      project.android {
-                          if (namespace == null) {
-                              namespace project.group
-                          }
-                      }
-                  }
-              }
-          }
-          ' >> android/build.gradle
-
       - name: Install dependencies
         run: flutter pub get
+
+      # SOLUCIÓN RADICAL: Inyecta el plugin de Kotlin directamente en el archivo build.gradle de la librería jni en caché
+      - name: Patch JNI Plugin Build.gradle
+        run: |
+          JNI_GRADLE=$(find ~/.pub-cache -path "*/jni-*/android/build.gradle" | head -n 1)
+          if [ -f "$JNI_GRADLE" ]; then
+            echo "Patching $JNI_GRADLE"
+            echo -e '\napply plugin: "org.jetbrains.kotlin.android"\n' >> "$JNI_GRADLE"
+          fi
 
       - name: Build APK
         run: flutter build apk --release
