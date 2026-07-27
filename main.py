@@ -237,7 +237,7 @@ class DownloadCard(ft.Card):
         self.page_ref.update()
 
 def main(page: ft.Page):
-    page.title = "Snaptube Flet Android"
+    page.title = "Navegador & Descargador Flet"
     page.theme_mode = ft.ThemeMode.DARK
     page.padding = 0
 
@@ -267,28 +267,29 @@ def main(page: ft.Page):
         border_radius=20,
         content_padding=10
     )
-    
-    if hasattr(ft, "WebView"):
-        web_view_control = ft.WebView(url="https://www.google.com", expand=True)
-    else:
-        web_view_control = ft.Container(
-            content=ft.Column([
-                ft.Icon(ft.Icons.PUBLIC, size=64, color=ft.Colors.BLUE),
-                ft.Text("Navegador Web Listo", size=18, weight=ft.FontWeight.BOLD),
-                ft.Text("Ingresa una URL o enlace directo arriba para descargar.", color=ft.Colors.GREY_400)
-            ], alignment=ft.MainAxisAlignment.CENTER, horizontal_alignment=ft.CrossAxisAlignment.CENTER),
-            expand=True,
-            alignment=ft.Alignment(0, 0)
-        )
+
+    # Componente WebView nativo activo
+    wv = ft.WebView(
+        url="https://www.google.com",
+        expand=True,
+        javascript_enabled=True,
+        on_page_started=lambda e: update_url_field(e.data),
+    )
+
+    def update_url_field(new_url):
+        if new_url:
+            url_input.value = new_url
+            page.update()
 
     def navigate(e):
         target = url_input.value.strip()
         if not target.startswith("http://") and not target.startswith("https://"):
-            target = f"https://www.google.com/search?q={target}" if "." not in target else f"https://{target}"
+            if "." in target and " " not in target:
+                target = f"https://{target}"
+            else:
+                target = f"https://www.google.com/search?q={target}"
         url_input.value = target
-        
-        if hasattr(web_view_control, 'url'):
-            web_view_control.url = target
+        wv.url = target
         page.update()
 
     def open_downloads(e):
@@ -338,7 +339,7 @@ def main(page: ft.Page):
                 padding=8,
                 bgcolor=ft.Colors.SURFACE_CONTAINER_HIGHEST
             ),
-            web_view_control
+            wv
         ], expand=True)
     )
 
