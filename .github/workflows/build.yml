@@ -24,14 +24,18 @@ jobs:
         with:
           channel: 'stable'
 
-      # PASO CLAVE: Elimina bloqueos y cachés viejas para borrar 'jni'
       - name: Clean locks and cache
         run: |
           rm -f pubspec.lock
           flutter pub cache clean --force
 
       - name: Create missing native Android files
-        run: flutter create . --platforms android
+        run: flutter create . --platforms android --android-language kotlin
+
+      # PASO DEFINITIVO: Configura Kotlin a nivel raíz de Gradle para que paquetes como :jni no fallen
+      - name: Inject Kotlin Plugin into Gradle
+        run: |
+          echo 'buildscript { ext.kotlin_version = "1.8.22"; repositories { google(); mavenCentral() }; dependencies { classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version" } }' | cat - android/build.gradle > temp && mv temp android/build.gradle
 
       - name: Install dependencies
         run: flutter pub get
