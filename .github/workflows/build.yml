@@ -25,16 +25,10 @@ jobs:
           channel: 'stable'
 
       - name: Create missing native Android files
-        run: flutter create . --platforms android --android-language kotlin
-
-      - name: Fix Kotlin Gradle Plugin for dependencies
-        run: |
-          sed -i 's/plugins {/plugins {\n    id "org.jetbrains.kotlin.android" version "1.8.22" apply false/' android/build.gradle
+        run: flutter create . --platforms android --template=app
 
       - name: Install dependencies
-        run: |
-          flutter pub cache clean --force
-          flutter pub get
+        run: flutter pub get
 
       - name: Build APK
         run: flutter build apk --release
